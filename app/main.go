@@ -3,19 +3,17 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"flag"
 	"fmt"
 	"io"
 	"os"
 	"time"
 
-	//"os"
-
+	"github.com/caarlos0/env/v6"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-func genOut(len, count int) {
+func genLog(len, count int) {
 	var err error
 
 	for i := 0; i < count; i++ {
@@ -28,11 +26,11 @@ func genOut(len, count int) {
 		// Convert the slice of bytes to a string.
 		m := fmt.Sprintf("%x", b)
 
-		log.Info().Str("name", "fbit.logger").Msgf("%s", m)
+		log.Info().Str("name", "fluentlogger").Msgf("%s", m)
 	}
 
 	if err != nil {
-		log.Error().Str("name", "fbit.logger").Err(err).Msg("failed to logging")
+		log.Error().Str("name", "fluentlogger").Err(err).Msg("failed to logging")
 	}
 }
 
@@ -40,46 +38,45 @@ func runApp(ctx context.Context) {
 	l := ctx.Value("len")
 	c := ctx.Value("count")
 
-	genOut(l.(int), c.(int))
+	genLog(l.(int), c.(int))
 }
 
-type Log struct {
-	Name     string
-	Age      int
-	Contents string
+type LogConfig struct {
+	Out   string `env:"LOG_OUT" envDefault:""`
+	Len   int    `env:"LOG_LEN" envDefault:"64"`
+	Count int    `env:"LOG_COUNT" envDefault:"10"`
 }
 
 func main() {
-	out := flag.String("o", "", "log out file")
-	len := flag.Int("l", 1024*64, "log length")
-	count := flag.Int("c", 4, "log count")
+	var w []io.Writer
+	w = append(w, os.Stdout)
+	zerolog.TimestampFieldName = "logtime"
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	flag.Parse()
+	cfg := LogConfig{}
+	if err := env.Parse(&cfg); err != nil {
+		fmt.Printf("failed to parse env with error %+v", err)
+		log.Fatal().Err(err).Msgf("failed to parse env")
+	}
 
-	if *out != "" {
-		f, err := os.Create(*out)
+	// init log with config
+	if cfg.Out != "" {
+		f, err := os.Create(cfg.Out)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("failed to create log file %v", *out)
+			fmt.Printf("failed to create log out %v", cfg.Out)
+			log.Fatal().Err(err).Msgf("failed to create log out %v", cfg.Out)
 		}
 		defer f.Close()
 
-		zerolog.TimestampFieldName = "logtime"
-		zerolog.TimeFieldFormat = time.RFC3339Nano
-
-		var w []io.Writer
-		w = append(w, os.Stdout)
 		w = append(w, f)
-
-		// Set the log output to the log writer.
-		log.Logger = log.Output(io.MultiWriter(w...))
 	}
 
-	// docker run -e FOO=bar my_image
-	//foo := os.Getenv("FOO")
+	// Set the log output to the log writer.
+	log.Logger = log.Output(io.MultiWriter(w...))
 
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, "len", (int)((*len)/2))
-	ctx = context.WithValue(ctx, "count", (int)(*count))
+	ctx = context.WithValue(ctx, "len", (int)((cfg.Len)/2))
+	ctx = context.WithValue(ctx, "count", (int)(cfg.Count))
 
 	runApp(ctx)
 }
