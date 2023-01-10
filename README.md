@@ -4,15 +4,27 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 
 <br/><br/><br/>
 
+## Objective  
+
+* 환경 변수로 파라미터를 전달하는 Go App 작성하기    
+* Go언어로 작성한 App 이미지를 쿠버네티스에서 실행하기  
+* fluent-bit 디버깅하기  
+  > fluent-bit 의 `latest-debug` Image Tag를 사용하면 Pod 에 쉘로 접근하여 디버깅할 수 있습니다.  
+    
+
+
+<br/><br/><br/>
+
 ## Prerequisites  
 
 * Go +1.17 
 * Docker  
 * Kubernetes  
+* (로컬 환경의 경우) Kind  
 
 <br/><br/><br/>
 
-## App  
+## Overview  
 
 *fluentlogger* App 은 쿠버네티스 Pod Logging 을 테스트하는 앱입니다.  
 
