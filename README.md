@@ -48,7 +48,7 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 fluent-bit 이 쿠버네티스 클러스터에 배포되지 않았다면, fluent-bit Helm chart 설치하기:  
 
 ```bash
-helm install fluent-bit fluent/fluent-bit
+helm install fluent-bit fluent/fluent-bit -f ./assets/chart/values.yaml
 ```
 
 환경변수 정의하기:  
