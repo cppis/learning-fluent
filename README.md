@@ -20,6 +20,7 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 * Go +1.17 
 * Docker  
 * Kubernetes  
+* kubectl run  
 * (로컬 환경의 경우) Kind  
 
 <br/><br/><br/>
@@ -54,13 +55,31 @@ docker push $IMAGE_REPO/fluentlogger
 쿠버네티스에서 *fluentlogger* 실행하기:  
 
 ```
-kubectl run fluentlogger --image=$IMAGE_REPO/fluentlogger --restart=Never --env="LOG_OUT=log.out" --env="LOG_LEN=65536" --env="LOG_COUNT=10"
+kubectl run fluentlogger --image=$IMAGE_REPO/fluentlogger \
+  --restart=Never \
+  --attach=true \
+  --rm=true \
+  --env="LOG_OUT=log.out" \
+  --env="LOG_LEN=65536" \
+  --env="LOG_COUNT=10"
 ```
+
+> `kubectl run` `attach` flag:  
+>   true인 경우, Pod 가 실행될 때까지 기다린 다음 `kubectl attach` 처럼 포드에 연결합니다.  
+>   기본값은 *false* 지만, 
+>   `-i/--stdin` 이 설정되었다면 *true* 입니다.  
+>   `--restart=Never` 를 사용하면 컨테이너 프로세스의 종료 코드가 반환됩니다.  
 
 쿠버네티스에서 실행 중인 *fluent-bit* 컨테이너의 쉘에 접근하기:  
 
 ```bash
 kubectl exec -it {fluent-bit Pod} -- /bin/bash
+```
+
+만약 *fluentlogger* Pod 가 남아있다면 삭제하기:  
+
+```bash
+kubectl delete pod fluentlogger
 ```
 
 <br/><br/><br/>
