@@ -1,0 +1,84 @@
+image:
+  #repository: cr.fluentbit.io/fluent/fluent-bit
+  # Overrides the image tag whose default is {{ .Chart.AppVersion }}
+  tag: "latest-debug"
+  
+## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/configuration-file
+config:
+  ## https://docs.fluentbit.io/manual/pipeline/filters
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+
+    [FILTER]
+        Name         parser
+        Match        kube_*
+        Key_Name     log
+        Reserve_Data True
+        Parser       docker
+        Parser       containerd
+
+    [FILTER]
+        Name        modify
+        Match       *
+        Hard_rename log message
+
+    [FILTER]
+        Name         parser
+        Match        kube_*
+        Key_Name     message
+        Reserve_Data True
+        Parser       glog
+        Parser       json
+
+    # level is a common synonym for severity,
+    # the default field name in libraries such as GoLang's zap.
+    # populate severity with level, if severity does not exist.
+    [FILTER]
+        Name        modify
+        Match       kube_*
+        Copy        level severity
+
+  ## https://docs.fluentbit.io/manual/pipeline/outputs
+  #outputs: |
+  #  [OUTPUT]
+  #      Name es
+  #      Match kube.*
+  #      Host elasticsearch-master
+  #      Logstash_Format On
+  #      Retry_Limit False
+  #
+  #  [OUTPUT]
+  #      Name es
+  #      Match host.*
+  #      Host elasticsearch-master
+  #      Logstash_Format On
+  #      Logstash_Prefix node
+  #      Retry_Limit False
+
+  ## https://docs.fluentbit.io/manual/pipeline/parsers
+  customParsers: |
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+        Name        containerd
+        Format      regex
+        # The timestamp is described in https://www.rfc-editor.org/rfc/rfc3339#section-5.6
+        Regex       ^(?<time>[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt ][0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:[Zz]|[+-][0-9]{2}:[0-9]{2})) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+        Name        json
+        Format      json
+
+logLevel: info

@@ -8,6 +8,7 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 
 * 환경 변수로 파라미터를 전달하는 Go App 작성하기    
 * Go언어로 작성한 App 이미지를 쿠버네티스에서 실행하기  
+* fluent-bit Helm chart 배포하기  
 * fluent-bit 디버깅하기  
   > fluent-bit 의 `latest-debug` Image Tag를 사용하면 Pod 에 쉘로 접근하여 디버깅할 수 있습니다.  
     
@@ -20,6 +21,11 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 * Go +1.17 
 * Docker  
 * Kubernetes  
+* Helm  
+  * fluent-bit Helm chart 설치하기:  
+    ```bash
+    helm repo add fluent https://fluent.github.io/helm-charts
+    ```
 * kubectl run  
 * (로컬 환경의 경우) Kind  
 
@@ -38,6 +44,12 @@ fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입�
 <br/><br/><br/>
 
 ## Run  
+
+fluent-bit 이 쿠버네티스 클러스터에 배포되지 않았다면, fluent-bit Helm chart 설치하기:  
+
+```bash
+helm install fluent-bit fluent/fluent-bit
+```
 
 환경변수 정의하기:  
 
