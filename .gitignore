@@ -1,14 +1,9 @@
 .env
 .vscode/
 .idea/
-bin/
 vendor/
 pprof/
 *.exe
 *.prof
-server.log
-server-*.log.gz
-relayer.local.yaml
-app/*.exe
-app/*.log
-app/server.yaml
+*.log
+app/app

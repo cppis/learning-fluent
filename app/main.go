@@ -26,7 +26,7 @@ func genLog(len, count int) {
 		// Convert the slice of bytes to a string.
 		m := fmt.Sprintf("%x", b)
 
-		log.Info().Str("name", "fluentlogger").Msgf("%s", m)
+		log.Info().Str("name", "fluentlogger").Msgf("%s", m[:len])
 	}
 
 	if err != nil {
@@ -35,10 +35,10 @@ func genLog(len, count int) {
 }
 
 func runApp(ctx context.Context) {
-	l := ctx.Value("len")
-	c := ctx.Value("count")
+	l := ctx.Value("len").(int)
+	c := ctx.Value("count").(int)
 
-	genLog(l.(int), c.(int))
+	genLog(l, c)
 }
 
 type LogConfig struct {
@@ -75,7 +75,7 @@ func main() {
 	log.Logger = log.Output(io.MultiWriter(w...))
 
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, "len", (int)((cfg.Len)/2))
+	ctx = context.WithValue(ctx, "len", (int)(cfg.Len))
 	ctx = context.WithValue(ctx, "count", (int)(cfg.Count))
 
 	runApp(ctx)

@@ -1,32 +1,59 @@
 # Learning Fluent
 
-fluent-bit GKE multiline 테스트 프로젝트입니다.  
+fluent-bit Kubernetes multiline log 를 테스트하기 위한 프로젝트입니다.  
+
+<br/><br/><br/>
+
+## Prerequisites  
+
+* Go +1.17 
+* Docker  
+* Kubernetes  
+
+<br/><br/><br/>
+
+## App  
+
+*fluentlogger* App 은 쿠버네티스 Pod Logging 을 테스트하는 앱입니다.  
+
+환경변수로 전달받는 파라미터는 다음과 같습니다:  
+
+* `LOG_OUT`: Log 출력 파일 이름 (기본 값은 temp.json)
+* `LOG_LEN`: 랜덤 Log Byte 길이 (기본 값은 64 Byte)
+* `LOG_COUNT`: 랜덤 Log 출력 회수 (기본 값은 10 번)
 
 <br/><br/><br/>
 
 ## Run  
 
+환경변수 정의하기:  
+
 ```bash
 export IMAGE_REPO={Image Registry}
 ```
 
-> $ROOT_ENV 는 프로젝트 Root 경로입니다.  
+이미지 빌드/게시하기:  
 
 ```bash
 docker build --rm --no-cache --tag $IMAGE_REPO/fluentlogger --file ./assets/docker/Dockerfile .
+docker push $IMAGE_REPO/fluentlogger
 ```
 
-run fluentlogger in the kubernetes:  
+쿠버네티스에서 *fluentlogger* 실행하기:  
 
 ```
-kubectl run fluentlogger --image=$REPO_AR/fluentlogger --env="LOG_OUT=log.out" --env="LOG_LEN=65536" --env="LOG_COUNT=10"
+kubectl run fluentlogger --image=$IMAGE_REPO/fluentlogger --restart=Never --env="LOG_OUT=log.out" --env="LOG_LEN=65536" --env="LOG_COUNT=10"
 ```
 
-* LOG_OUT: Log 출력 파일 이름 (기본 값은 temp.json)
-* LOG_LEN: Log Byte 길이 (기본 값은 64 Byte)
-* Count: Log 출력 회수 (기본 값은 10 번)
+쿠버네티스에서 실행 중인 *fluent-bit* 컨테이너의 쉘에 접근하기:  
+
+```bash
+kubectl exec -it {fluent-bit Pod} -- /bin/bash
+```
 
 <br/><br/><br/>
 
 ## References  
+
 * [Fluent Bit v2.0](https://docs.fluentbit.io/manual/)  
+* [fluent-bit 0.21.7 helm chart](https://artifacthub.io/packages/helm/fluent/fluent-bit)
